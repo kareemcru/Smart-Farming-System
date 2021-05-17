@@ -50,7 +50,8 @@ Adafruit_MQTT_SPARK mqtt(&TheClient,AIO_SERVER,AIO_SERVERPORT,AIO_USERNAME,AIO_K
 TinyGPSPlus gps;
 
 //Feeds
-Adafruit_MQTT_Publish GPS = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/GpsLocation");
+Adafruit_MQTT_Publish Satellites = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/Satellites");
+Adafruit_MQTT_Publish GPS = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/GPSLocation");
 Adafruit_MQTT_Publish Moist = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/SoilMoisture");
 Adafruit_MQTT_Publish Pressure = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/Pressure");
 Adafruit_MQTT_Publish Humid = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/Humidity");
@@ -87,10 +88,6 @@ int distance; // variable for the distance measurement
 
 //Variables for Stepper and OLED
 const int stepsRev = 2048;
-int16_t stepper_in1 = D1; //variable to store info from IN1
-int16_t stepper_in2 = D2; //variable to store info from IN2
-int16_t stepper_in3 = D3; //variable to store info from IN3
-int16_t stepper_in4 = D4; //variable to store info from IN4 
 int16_t stepperSpeed=15;
 int16_t stepperSteps;
 
@@ -162,9 +159,9 @@ void loop()
   //Code for Stepper Motor
     myStepper.setSpeed(7);
     myStepper.step(1024);
-    delay(5000);
+    delay(2000);
     myStepper.step(-1024);
-    delay(5000);
+    //delay(5000);
 
   //Code for Dust Sensor
   duration = pulseIn(dustSensor, LOW);
@@ -261,7 +258,7 @@ void displayInfo()
 			display.printf("lat  %f \nlong %f \nalt %f\n", lat,lon,alt);
 			display.printf("satelites %i", sat);
 			display.display();
-      createEventPayload(lon, lat, alt);
+      createEventPayload(lon, lat, alt, sat);
     }
     else 
 		{
@@ -275,7 +272,7 @@ void displayInfo()
 	}
 
 }
-void createEventPayload(float jlon, float jalt, float jlat)
+void createEventPayload(float jlon, float jalt, float jlat, int sat)
 {
   JsonWriterStatic<256> jw;
   {
@@ -285,18 +282,20 @@ void createEventPayload(float jlon, float jalt, float jlat)
 		jw.insertKeyValue("lat", jlat);
 		jw.insertKeyValue("lon", jlon);
 		jw.insertKeyValue("alt", jalt);
+    jw.insertKeyValue("Satellites", sat);
       //Code for Adafruit.IO
     if((millis()-lastPub > 30000)) 
     {
       if(mqtt.Update()) 
       {
+        Serial.printf("Publishing %s\n", jw.getBuffer());
+        GPS.publish(jw.getBuffer());
         Moist.publish(soilMoisturePercent);
         Temp.publish(tempF);
         Humid.publish(humidRH);
         Dust.publish(dustSense);
-        Pressure.publish(inHg);
-        Serial.printf("Publishing %s\n", jw.getBuffer());
-        GPS.publish(jw.getBuffer());
+        Pressure.publish(inHg);  
+        Satellites.publish(sat);
       } 
       lastPub = millis();
     }  
