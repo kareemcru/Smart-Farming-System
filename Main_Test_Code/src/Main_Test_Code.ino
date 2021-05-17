@@ -217,6 +217,35 @@ void loop()
   printValues();
   MQTT_connect();
 }
+void MQTT_connect() 
+{
+  int8_t ret;
+ 
+  // Stop if already connected.
+  if (mqtt.connected()) {
+    return;
+  }
+ 
+  Serial.print("Connecting to MQTT... ");
+ 
+  while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
+       Serial.println(mqtt.connectErrorString(ret));
+       Serial.println("Retrying MQTT connection in 5 seconds...");
+       mqtt.disconnect();
+       delay(5000);  // wait 5 seconds
+  }
+  Serial.println("MQTT Connected!");
+    // Ping MQTT Broker every 2 minutes to keep connection alive
+  if ((millis()-lastMQTT)>120000) 
+  {
+      Serial.printf("Pinging MQTT \n");
+      if(! mqtt.ping()) {
+        Serial.printf("Disconnecting \n");
+        mqtt.disconnect();
+      }
+      lastMQTT = millis();
+  }
+}
 void displayInfo()
 {
 	float lat,lon,alt;
@@ -283,7 +312,7 @@ void createEventPayload(float jlon, float jalt, float jlat, int sat)
 		jw.insertKeyValue("lon", jlon);
 		jw.insertKeyValue("alt", jalt);
     jw.insertKeyValue("Satellites", sat);
-      //Code for Adafruit.IO
+    //Code for Adafruit.IO
     if((millis()-lastPub > 30000)) 
     {
       if(mqtt.Update()) 
@@ -323,35 +352,6 @@ void printValues()
     Serial.printf("Dust: %0.2f\n", dustSense);
 
     Serial.println();
-}
-void MQTT_connect() 
-{
-  int8_t ret;
- 
-  // Stop if already connected.
-  if (mqtt.connected()) {
-    return;
-  }
- 
-  Serial.print("Connecting to MQTT... ");
- 
-  while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
-       Serial.println(mqtt.connectErrorString(ret));
-       Serial.println("Retrying MQTT connection in 5 seconds...");
-       mqtt.disconnect();
-       delay(5000);  // wait 5 seconds
-  }
-  Serial.println("MQTT Connected!");
-    // Ping MQTT Broker every 2 minutes to keep connection alive
-  if ((millis()-lastMQTT)>120000) 
-  {
-      Serial.printf("Pinging MQTT \n");
-      if(! mqtt.ping()) {
-        Serial.printf("Disconnecting \n");
-        mqtt.disconnect();
-      }
-      lastMQTT = millis();
-  }
 }
 void helloWorld() 
 {
