@@ -9,8 +9,6 @@
  * Author: Kareem Crum
  * Date: 05-14-2021
  */
-
-#include <Wire.h>
 #include <math.h>
 #include <TinyGPS++/TinyGPS++.h>
 #include <Adafruit_MQTT.h>
@@ -34,7 +32,7 @@ void createEventPayload(float jlon, float jalt, float jlat);
 void printValues();
 void MQTT_connect();
 void helloWorld();
-#line 25 "c:/Users/kareem/Documents/IOT/Smart-Farming-System/Main_Test_Code/src/Main_Test_Code.ino"
+#line 23 "c:/Users/kareem/Documents/IOT/Smart-Farming-System/Main_Test_Code/src/Main_Test_Code.ino"
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 #define OLED_RESET    D4 // Reset pin # (or -1 if sharing Arduino reset pin)
@@ -230,19 +228,7 @@ void loop()
   }
   delay(1000);
 
-  //Code for Adafruit.IO
-    if((millis()-lastPub > 30000)) 
-  {
-    if(mqtt.Update()) 
-    {
-      Moist.publish(soilMoisturePercent);
-      Temp.publish(tempF);
-      Humid.publish(humidRH);
-      Dust.publish(dustSense);
-      Pressure.publish(inHg);
-    } 
-    lastPub = millis();
-  }
+
 
   printValues();
   MQTT_connect();
@@ -312,12 +298,21 @@ void createEventPayload(float jlon, float jalt, float jlat)
 		jw.insertKeyValue("lat", jlat);
 		jw.insertKeyValue("lon", jlon);
 		jw.insertKeyValue("alt", jalt);
-    if(mqtt.Update())
+      //Code for Adafruit.IO
+    if((millis()-lastPub > 30000)) 
     {
-      Serial.printf("Publishing %s\n", jw.getBuffer());
-      GPS.publish(jw.getBuffer());
-
-    }
+      if(mqtt.Update()) 
+      {
+        Moist.publish(soilMoisturePercent);
+        Temp.publish(tempF);
+        Humid.publish(humidRH);
+        Dust.publish(dustSense);
+        Pressure.publish(inHg);
+        Serial.printf("Publishing %s\n", jw.getBuffer());
+        GPS.publish(jw.getBuffer());
+      } 
+      lastPub = millis();
+    }  
   }
 }
 void printValues() 

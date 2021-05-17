@@ -30,3 +30,5 @@ in order to boost yields and maintain farmer morale!
 The *overall* project of making this **Smart Farm System** began at 0830 on 11-May-2021 
 
 # Links
+The link to our **Hackster.IO** is 
+The link to our **Adafruit.IO Dashboard** is  https://io.adafruit.com/Kareemcru/dashboards/smart-farming-system
