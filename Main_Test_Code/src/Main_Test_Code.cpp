@@ -1,3 +1,8 @@
+/******************************************************/
+//       THIS IS A GENERATED FILE - DO NOT EDIT       //
+/******************************************************/
+
+#line 1 "c:/Users/kareem/Documents/IOT/Smart-Farming-System/Main_Test_Code/src/Main_Test_Code.ino"
 /*
  * Project Main_Test_Code
  * Description: The Code branch where we combine all of our code before finalizing it
@@ -22,6 +27,14 @@
 #include "Stepper.h"
 #include "credentials.h"
 
+void setup();
+void loop();
+void displayInfo();
+void createEventPayload(float jlon, float jalt, float jlat);
+void printValues();
+void MQTT_connect();
+void helloWorld();
+#line 25 "c:/Users/kareem/Documents/IOT/Smart-Farming-System/Main_Test_Code/src/Main_Test_Code.ino"
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 #define OLED_RESET    D4 // Reset pin # (or -1 if sharing Arduino reset pin)

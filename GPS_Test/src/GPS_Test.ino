@@ -74,7 +74,7 @@ void loop()
   }
   delay(1000);
 }
-
+																																														
 void displayInfo()
 {
 	float lat,lon,alt;
