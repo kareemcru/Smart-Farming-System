@@ -96,9 +96,9 @@ Serial.printf ("Z- azg %f \n", azg);
 delay(3000);
 
 myStepper.setSpeed(15);
-myStepper.step(4096);
+myStepper.step(1024);
 delay(9000);
-myStepper.step(-2048);
+myStepper.step(-1024);
 delay(5000);
  
 
