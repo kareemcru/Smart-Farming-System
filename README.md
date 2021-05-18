@@ -17,6 +17,7 @@ in order to boost yields and maintain farmer morale!
 * Solar Cell
 * Rechargeable Battery
 * UltraSonic Component
+* MPU 6050
 
 # Parts/ Tools
 * Acrylic
@@ -25,9 +26,16 @@ in order to boost yields and maintain farmer morale!
 * Wire Strippers
 * BreadBoard
 * Farm
+* Wood
+* Epilog Laser Cutter
 
 # Summary
-The *overall* project of making this **Smart Farm System** began at 0830 on 11-May-2021 
+The *overall* project of making this **Smart Farm System** began at 0830 on 11-May-2021 and is designed to aid farmers in *not only* the **health** of their crops, 
+but the **security** and **sanctity** of their crops as well. **Stephanie Perea and Kareem Crum** worked *tirelessly* to implement the components in such a fashion that would
+bring their vision for **hemp** farmers to *fruition. Stephanie handled the bulk of the **fabricating** for this project as well as the **power point presentation** and **component 
+research**. Kareem handled the bulk of the **coding** for this project as well as the **Adafruit.IO dashboard** and **Hackster.io**. Stephanie and Kareem worked *together* to keep a 
+good work pace and collaborated on some of the overall project's *asthetics*. The completion of the project was on 21-MAY-2021 and was the same day as the overall project presentation.
+
 
 # Links
 The link to our **Hackster.IO** is 
