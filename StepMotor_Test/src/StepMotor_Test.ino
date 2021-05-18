@@ -17,7 +17,7 @@ int16_t stepper_in4 = D2; //variable to store info from IN4
 int16_t stepperSpeed=15;
 int16_t stepperSteps;
 int16_t spr=2048;
-Stepper myStepper (2048, D1,D3, D2, D4);
+Stepper myStepper (2048, D5, D3, D4, D2);
 
 SYSTEM_MODE(SEMI_AUTOMATIC);
 // setup() runs once, when the device is first turned on.
@@ -31,9 +31,9 @@ void loop()
  {
 myStepper.setSpeed(15);
 myStepper.step(1024);
-delay(9000);
+delay(2000);
 myStepper.step(-1024);
-delay(5000);
+delay(2000);
  
 
 }

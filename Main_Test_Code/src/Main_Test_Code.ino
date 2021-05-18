@@ -26,8 +26,8 @@
 #define SCREEN_ADDRESS 0x3C ///< See datasheet for Address; 0x3D for 128x64, 0x3C for 128x32
 #define XPOS 0
 #define YPOS 1
-#define echoPin 2 // attach pin D2 Arduino to pin Echo of HC-SR04
-#define trigPin 3 //attach pin D3 Arduino to pin Trig of HC-SR04
+#define echoPin D6 // attach pin D6 Arduino to pin Echo of HC-SR04
+#define trigPin D7 //attach pin D7 Arduino to pin Trig of HC-SR04
 
 
 
@@ -50,8 +50,9 @@ Adafruit_MQTT_SPARK mqtt(&TheClient,AIO_SERVER,AIO_SERVERPORT,AIO_USERNAME,AIO_K
 TinyGPSPlus gps;
 
 //Feeds
+Adafruit_MQTT_Publish Trigger = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/UltraSonic");
 Adafruit_MQTT_Publish Satellites = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/Satellites");
-Adafruit_MQTT_Publish GPS = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/GPSLocation");
+Adafruit_MQTT_Publish GPS = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/Location");
 Adafruit_MQTT_Publish Moist = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/SoilMoisture");
 Adafruit_MQTT_Publish Pressure = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/Pressure");
 Adafruit_MQTT_Publish Humid = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/Humidity");
@@ -139,6 +140,7 @@ void setup()
   bool status;
   status = bme.begin(0x76);
   myStepper.setSpeed(15);
+  myStepper.step(0);
 
   Serial.printf("Connecting to Internet \n");
   WiFi.connect();
@@ -148,6 +150,10 @@ void setup()
     delay(100);
   }
   Serial.printf("\n Connected!!!!!! \n");
+
+  //UltraSonic Sensor Setup
+  Serial.println("Ultrasonic Sensor HC-SR04 Test"); // print some text in Serial Monitor
+  Serial.println("with Argon");
 
 }
 
@@ -161,7 +167,7 @@ void loop()
     myStepper.step(1024);
     delay(2000);
     myStepper.step(-1024);
-    //delay(5000);
+    delay(2000);
 
   //Code for Dust Sensor
   duration = pulseIn(dustSensor, LOW);
@@ -191,9 +197,9 @@ void loop()
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
   // Reads the echoPin, returns the sound wave travel time in microseconds
-  duration = pulseIn(echoPin, HIGH);
+  amount = pulseIn(echoPin, HIGH);
   // Calculating the distance
-  amount = duration * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
+  distance = amount * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
 
  //Code for BME
   tempC = bme.readTemperature();
@@ -216,35 +222,6 @@ void loop()
 
   printValues();
   MQTT_connect();
-}
-void MQTT_connect() 
-{
-  int8_t ret;
- 
-  // Stop if already connected.
-  if (mqtt.connected()) {
-    return;
-  }
- 
-  Serial.print("Connecting to MQTT... ");
- 
-  while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
-       Serial.println(mqtt.connectErrorString(ret));
-       Serial.println("Retrying MQTT connection in 5 seconds...");
-       mqtt.disconnect();
-       delay(5000);  // wait 5 seconds
-  }
-  Serial.println("MQTT Connected!");
-    // Ping MQTT Broker every 2 minutes to keep connection alive
-  if ((millis()-lastMQTT)>120000) 
-  {
-      Serial.printf("Pinging MQTT \n");
-      if(! mqtt.ping()) {
-        Serial.printf("Disconnecting \n");
-        mqtt.disconnect();
-      }
-      lastMQTT = millis();
-  }
 }
 void displayInfo()
 {
@@ -287,7 +264,7 @@ void displayInfo()
 			display.printf("lat  %f \nlong %f \nalt %f\n", lat,lon,alt);
 			display.printf("satelites %i", sat);
 			display.display();
-      createEventPayload(lon, lat, alt, sat);
+      createEventPayload(lat, lon, alt, sat);
     }
     else 
 		{
@@ -301,34 +278,30 @@ void displayInfo()
 	}
 
 }
-void createEventPayload(float jlon, float jalt, float jlat, int sat)
+void createEventPayload(float jlat, float jlon, float jalt, int sat)
 {
-  JsonWriterStatic<256> jw;
-  {
-  	JsonWriterAutoObject obj(&jw);
+char buffer[50];
 
-		// Add various types of data
-		jw.insertKeyValue("lat", jlat);
-		jw.insertKeyValue("lon", jlon);
-		jw.insertKeyValue("alt", jalt);
-    jw.insertKeyValue("Satellites", sat);
+  sprintf(buffer, "{\"lat\":%0.6f,\"lon\":%0.6f,\"ele\":%0.2f}", jlat, jlon, jalt);
+
     //Code for Adafruit.IO
     if((millis()-lastPub > 30000)) 
     {
       if(mqtt.Update()) 
       {
-        Serial.printf("Publishing %s\n", jw.getBuffer());
-        GPS.publish(jw.getBuffer());
+        Serial.printf("Publishing %s\n", buffer);
+        GPS.publish(buffer);
         Moist.publish(soilMoisturePercent);
         Temp.publish(tempF);
         Humid.publish(humidRH);
         Dust.publish(dustSense);
         Pressure.publish(inHg);  
         Satellites.publish(sat);
+        Trigger.publish(distance);
       } 
       lastPub = millis();
     }  
-  }
+  
 }
 void printValues() 
 {
@@ -352,6 +325,35 @@ void printValues()
     Serial.printf("Dust: %0.2f\n", dustSense);
 
     Serial.println();
+}
+void MQTT_connect() 
+{
+  int8_t ret;
+ 
+  // Stop if already connected.
+  if (mqtt.connected()) {
+    return;
+  }
+ 
+  Serial.print("Connecting to MQTT... ");
+ 
+  while ((ret = mqtt.connect()) != 0) { // connect will return 0 for connected
+       Serial.println(mqtt.connectErrorString(ret));
+       Serial.println("Retrying MQTT connection in 5 seconds...");
+       mqtt.disconnect();
+       delay(5000);  // wait 5 seconds
+  }
+  Serial.println("MQTT Connected!");
+    // Ping MQTT Broker every 2 minutes to keep connection alive
+  if ((millis()-lastMQTT)>120000) 
+  {
+      Serial.printf("Pinging MQTT \n");
+      if(! mqtt.ping()) {
+        Serial.printf("Disconnecting \n");
+        mqtt.disconnect();
+      }
+      lastMQTT = millis();
+  }
 }
 void helloWorld() 
 {
