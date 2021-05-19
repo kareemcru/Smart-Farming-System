@@ -4,10 +4,10 @@
  * Author: Kareem Crum
  * Date: 05-14-2021
  */
-#include <math.h>
 #include <TinyGPS++/TinyGPS++.h>
 #include <Adafruit_MQTT.h>
 
+#include "math.h"
 #include "JsonParserGeneratorRK.h"
 #include "Adafruit_MQTT/Adafruit_MQTT.h" 
 #include "Adafruit_MQTT/Adafruit_MQTT_SPARK.h" 
@@ -58,6 +58,7 @@ Adafruit_MQTT_Publish Pressure = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/fee
 Adafruit_MQTT_Publish Humid = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/Humidity");
 Adafruit_MQTT_Publish Temp = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/Temperature");
 Adafruit_MQTT_Publish Dust = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/DustSensor");
+Adafruit_MQTT_Publish FallSense = Adafruit_MQTT_Publish(&mqtt, AIO_USERNAME "/feeds/Acceleration");
 
 
 //Variable for BMe
@@ -104,6 +105,23 @@ bool gettingFix = false;
 
 float lat,lon,alt;
 
+//Variables for Acceleromotor
+byte accel_x_h, accel_x_L;
+int16_t accel_x;
+float accelX;
+
+byte accel_y_h, accel_y_L;
+int16_t accel_y;
+float accelY;
+
+byte accel_z_h, accel_z_L;
+int16_t accel_z;
+float accelZ;
+float accelTot;
+
+bool MPUfall = false;
+float MPUValue = 0.0;
+const float fall = 1.0;
 
 SYSTEM_MODE(SEMI_AUTOMATIC);
 
@@ -120,7 +138,17 @@ void setup()
 
   Serial.begin(9600);
 
-//GPS Set up
+//Acceleromotor Setup
+  Wire.begin();
+
+  Wire.beginTransmission(0x68);
+
+  Wire.write(0x6B);
+  Wire.write(0);
+
+  Wire.endTransmission(true);
+
+//GPS Setup
 	Serial1.begin(9600);
 	startFix = millis();
 	gettingFix = true;
@@ -207,6 +235,40 @@ void loop()
   pressPA = bme.readPressure();
   inHg = pressPA/3386.389;
   humidRH = bme.readHumidity();
+  
+  //Code for Acceleromotor
+  float accelZ, accelX, accelY;
+  delay(1000);
+  findAcceleration();
+  
+  Wire.requestFrom(0x68, 6, true);
+  accel_x_h = Wire.read();
+  accel_x_L = Wire.read();
+  accel_x = accel_x_h << 8 |accel_x_L;
+  accelX = accel_x / 15000.0;
+  Serial.printf("X-axis acceleration is %0.2f\n", accelX);
+
+  accel_y_h = Wire.read();
+  accel_y_L = Wire.read();
+  accel_y = accel_y_h <<8 | accel_y_L;
+  accelY = accel_y / 16000.0;
+  Serial.printf("Y-axis acceleration is %0.2f\n", accelY);
+
+  accel_z_h = Wire.read();
+  accel_z_L = Wire.read();
+  accel_z = accel_z_h << 8 | accel_z_L;
+  accelZ = accel_z / 15250.0;
+  Serial.printf("Z-axis acceleration is %0.2f\n", accelZ);
+  
+  accelTot = sqrt(pow(accelX,2)+pow(accelY,2)+pow(accelZ,2));
+  Serial.printf("Accel Total Value: %0.2f \n", accelTot);
+
+  if(!MPUfall) 
+  {
+    MPUValue = accelTot;
+    MPUfall = (MPUValue > fall);
+    Serial.printf("MPU Value is %0.2f\n", MPUValue);
+  }
 
   //Code for GPS
    while (Serial1.available() > 0)
@@ -222,6 +284,24 @@ void loop()
 
   printValues();
   MQTT_connect();
+}
+void helloWorld() 
+{
+	display.clearDisplay();
+	display.setTextSize(1);
+	display.setTextColor(WHITE);
+	display.setCursor(20,5);
+	display.println("GPS Initializing");
+	display.display();
+}
+
+void findAcceleration()
+{
+
+  Wire.beginTransmission(0x68);
+  Wire.write(0x3B);
+  Wire.endTransmission(false);
+
 }
 void displayInfo()
 {
@@ -298,6 +378,13 @@ char buffer[50];
         Pressure.publish(inHg);  
         Satellites.publish(sat);
         Trigger.publish(distance);
+        if(MPUfall)
+        {
+          FallSense.publish(MPUValue);
+          Serial.printf("MPU Fell %0.2f\n", MPUValue);
+          MPUfall = false;
+          MPUValue = 0.0;
+        }
       } 
       lastPub = millis();
     }  
@@ -354,13 +441,4 @@ void MQTT_connect()
       }
       lastMQTT = millis();
   }
-}
-void helloWorld() 
-{
-	display.clearDisplay();
-	display.setTextSize(1);
-	display.setTextColor(WHITE);
-	display.setCursor(20,5);
-	display.println("GPS Initializing");
-	display.display();
 }
