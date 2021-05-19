@@ -2,18 +2,17 @@
 //       THIS IS A GENERATED FILE - DO NOT EDIT       //
 /******************************************************/
 
-#line 1 "c:/Users/kareem/Documents/IOT/Smart-Farming-System/Main_Test_Code/src/Main_Test_Code.ino"
+#line 1 "c:/Users/kareem/Documents/IOT/Smart-Farming-System/Master-Code/src/Master-Code.ino"
 /*
- * Project Main_Test_Code
- * Description: The Code branch where we combine all of our code before finalizing it
- * Author: Kareem Crum and Stephanie Perea
- * Date: 05-14-2021
+ * Project Master-Code
+ * Description: The Smart Farming System Master Code
+ * Author: Stephanie Perea and Kareem Crum
+ * Date: 19-MAY-2021
  */
 #include <TinyGPS++/TinyGPS++.h>
 #include <Adafruit_MQTT.h>
 
 #include "math.h"
-#include "JsonParserGeneratorRK.h"
 #include "Adafruit_MQTT/Adafruit_MQTT.h" 
 #include "Adafruit_MQTT/Adafruit_MQTT_SPARK.h" 
 #include "Adafruit_MQTT/Adafruit_MQTT.h"
@@ -35,7 +34,7 @@ void createEventPayload(float jlat, float jlon, float jalt, int sat);
 void printValues();
 void adafruitPublish();
 void MQTT_connect();
-#line 23 "c:/Users/kareem/Documents/IOT/Smart-Farming-System/Main_Test_Code/src/Main_Test_Code.ino"
+#line 22 "c:/Users/kareem/Documents/IOT/Smart-Farming-System/Master-Code/src/Master-Code.ino"
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
 #define SCREEN_HEIGHT 64 // OLED display height, in pixels
 #define OLED_RESET    D4 // Reset pin # (or -1 if sharing Arduino reset pin)
