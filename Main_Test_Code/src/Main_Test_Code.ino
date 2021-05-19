@@ -1,7 +1,7 @@
 /*
  * Project Main_Test_Code
  * Description: The Code branch where we combine all of our code before finalizing it
- * Author: Kareem Crum
+ * Author: Kareem Crum and Stephanie Perea
  * Date: 05-14-2021
  */
 #include <TinyGPS++/TinyGPS++.h>
@@ -139,7 +139,7 @@ void setup()
 
   Serial.begin(9600);
 
-//Acceleromotor Setup
+//I2C Setup
   Wire.begin();
 
   Wire.beginTransmission(0x3C);
