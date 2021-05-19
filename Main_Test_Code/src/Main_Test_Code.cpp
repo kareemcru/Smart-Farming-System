@@ -28,10 +28,12 @@
 void setup();
 void loop();
 void helloWorld();
+void codingFunction();
 void findAcceleration();
 void displayInfo();
 void createEventPayload(float jlat, float jlon, float jalt, int sat);
 void printValues();
+void adafruitPublish();
 void MQTT_connect();
 #line 23 "c:/Users/kareem/Documents/IOT/Smart-Farming-System/Main_Test_Code/src/Main_Test_Code.ino"
 #define SCREEN_WIDTH 128 // OLED display width, in pixels
@@ -116,7 +118,8 @@ unsigned long lastSerial = 0;
 unsigned long lastPublish = 0;
 unsigned long startFix = 0;
 bool gettingFix = false;
-
+char buffer[50];
+uint8_t hr,mn,se,sat;
 float lat,lon,alt;
 
 //Variables for Acceleromotor
@@ -155,7 +158,7 @@ void setup()
 //Acceleromotor Setup
   Wire.begin();
 
-  Wire.beginTransmission(0x68);
+  Wire.beginTransmission(0x3C);
 
   Wire.write(0x6B);
   Wire.write(0);
@@ -203,6 +206,24 @@ void setup()
 void loop()
 {
   // The core of your code will likely live here.
+  codingFunction();
+  printValues();
+  adafruitPublish();
+  MQTT_connect();
+}
+
+void helloWorld() 
+{
+	display.clearDisplay();
+	display.setTextSize(1);
+	display.setTextColor(WHITE);
+	display.setCursor(20,5);
+	display.println("GPS Initializing");
+	display.display();
+}
+
+void codingFunction()
+{
 
   //Code for Stepper Motor
     myStepper.setSpeed(7);
@@ -231,15 +252,15 @@ void loop()
   soilMoisturePercent = map(soilMoistureValue, 1800, 3500, 100, 0);
  
  //Code for UltraSonic Sensor
-  // Clears the trigPin condition
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
-  // Sets the trigPin HIGH (ACTIVE) for 10 microseconds
   digitalWrite(trigPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(trigPin, LOW);
+  
   // Reads the echoPin, returns the sound wave travel time in microseconds
   amount = pulseIn(echoPin, HIGH);
+  Serial.println("The Data is:");
   // Calculating the distance
   distance = amount * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
 
@@ -294,19 +315,6 @@ void loop()
   }
   delay(1000);
 
-
-
-  printValues();
-  MQTT_connect();
-}
-void helloWorld() 
-{
-	display.clearDisplay();
-	display.setTextSize(1);
-	display.setTextColor(WHITE);
-	display.setCursor(20,5);
-	display.println("GPS Initializing");
-	display.display();
 }
 
 void findAcceleration()
@@ -317,6 +325,7 @@ void findAcceleration()
   Wire.endTransmission(false);
 
 }
+
 void displayInfo()
 {
 	float lat,lon,alt;
@@ -372,38 +381,13 @@ void displayInfo()
 	}
 
 }
+
 void createEventPayload(float jlat, float jlon, float jalt, int sat)
 {
-char buffer[50];
-
-  sprintf(buffer, "{\"lat\":%0.6f,\"lon\":%0.6f,\"ele\":%0.2f}", jlat, jlon, jalt);
-
-    //Code for Adafruit.IO
-    if((millis()-lastPub > 30000)) 
-    {
-      if(mqtt.Update()) 
-      {
-        Serial.printf("Publishing %s\n", buffer);
-        GPS.publish(buffer);
-        Moist.publish(soilMoisturePercent);
-        Temp.publish(tempF);
-        Humid.publish(humidRH);
-        Dust.publish(dustSense);
-        Pressure.publish(inHg);  
-        Satellites.publish(sat);
-        Trigger.publish(distance);
-        if(MPUfall)
-        {
-          FallSense.publish(MPUValue);
-          Serial.printf("MPU Fell %0.2f\n", MPUValue);
-          MPUfall = false;
-          MPUValue = 0.0;
-        }
-      } 
-      lastPub = millis();
-    }  
+  sprintf(buffer, "{\"lat\":%0.6f,\"lon\":%0.6f,\"ele\":%0.2f}", jlat, jlon, jalt); 
   
 }
+
 void printValues() 
 {
     Serial.printf("Temperature = %f\n", tempF);
@@ -427,6 +411,35 @@ void printValues()
 
     Serial.println();
 }
+
+void adafruitPublish()
+{
+    //Code for Adafruit.IO
+    if((millis()-lastPub > 30000)) 
+    {
+      if(mqtt.Update()) 
+      {
+        Serial.printf("Publishing %s\n", buffer);
+        GPS.publish(buffer);
+        Moist.publish(soilMoisturePercent);
+        Temp.publish(tempF);
+        Humid.publish(humidRH);
+        Dust.publish(dustSense);
+        Pressure.publish(inHg);  
+        Satellites.publish(sat);
+        Trigger.publish(amount);
+        if(MPUfall)
+        {
+          FallSense.publish(MPUValue);
+          Serial.printf("MPU Fell %0.2f\n", MPUValue);
+          MPUfall = false;
+          MPUValue = 0.0;
+        }
+      } 
+      lastPub = millis();
+    }
+}
+
 void MQTT_connect() 
 {
   int8_t ret;
