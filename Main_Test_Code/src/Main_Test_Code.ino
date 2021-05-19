@@ -87,6 +87,7 @@ float ratio = 0;
 //Variables for UltraSonic Sensor
 long amount; // variable for the duration of sound wave travel
 int distance; // variable for the distance measurement
+bool intruder;
 
 //Variables for Stepper and OLED
 const int stepsRev = 2048;
@@ -142,7 +143,7 @@ void setup()
 //I2C Setup
   Wire.begin();
 
-  Wire.beginTransmission(0x3C);
+  Wire.beginTransmission(0x68);
 
   Wire.write(0x6B);
   Wire.write(0);
@@ -247,6 +248,11 @@ void codingFunction()
   Serial.println("The Data is:");
   // Calculating the distance
   distance = amount * 0.034 / 2; // Speed of sound wave divided by 2 (go and back)
+  if(distance <=96)
+  {
+    intruder = true;
+    adafruitPublish();
+  }
 
  //Code for BME
   tempC = bme.readTemperature();
@@ -399,6 +405,11 @@ void printValues()
 void adafruitPublish()
 {
     //Code for Adafruit.IO
+    if(intruder)
+    {
+      Trigger.publish(distance);
+      intruder = false;
+    }
     if((millis()-lastPub > 30000)) 
     {
       if(mqtt.Update()) 
@@ -411,7 +422,6 @@ void adafruitPublish()
         Dust.publish(dustSense);
         Pressure.publish(inHg);  
         Satellites.publish(sat);
-        Trigger.publish(amount);
         if(MPUfall)
         {
           FallSense.publish(MPUValue);

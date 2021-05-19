@@ -158,7 +158,7 @@ void setup()
 //I2C Setup
   Wire.begin();
 
-  Wire.beginTransmission(0x3C);
+  Wire.beginTransmission(0x68);
 
   Wire.write(0x6B);
   Wire.write(0);
