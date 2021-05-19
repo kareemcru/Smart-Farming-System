@@ -135,7 +135,7 @@ float accelTot;
 
 bool MPUfall = false;
 float MPUValue = 0.0;
-const float fall = 1.5;
+const float fall = 1.0;
 
 SYSTEM_MODE(SEMI_AUTOMATIC);
 
@@ -281,6 +281,7 @@ void loop()
   {
     MPUValue = accelTot;
     MPUfall = (MPUValue > fall);
+    Serial.printf("MPU Value is %0.2f\n", MPUValue);
   }
 
   //Code for GPS
@@ -394,6 +395,7 @@ char buffer[50];
         if(MPUfall)
         {
           FallSense.publish(MPUValue);
+          Serial.printf("MPU Fell %0.2f\n", MPUValue);
           MPUfall = false;
           MPUValue = 0.0;
         }
