@@ -1,14 +1,15 @@
 # Smart-Farm-System
-A **Smart Farm System** that will provide *farmers* with the *smart tools* necessary to **increase** *yield* and overall *plant life*. 
+A **Smart Farm System** (SFS) with environmentally safe pest control; cost effective real-time monitoring; state-of-the art capabilities *Farmers* need to meet maximum yield year after year. *SmartTools* for overall *Product Quality*.
 
 # Overview
-This innovative **smart** farm system will *alleviate* the tedious but **crucial** work that farmers all over the globe suffer from. 
-The system will be able to *communicate with the farmers* anywhere that there is a smart device with **bluetooth** capabilities. 
-In comparison to previous farming systems, this **smart farming system** is a **tesla** because it utilizes the newest in *cutting edge technology* 
-in order to boost yields and maintain farmer morale!
+The innovative **SFS** *alleviates* reduces the time and cost of the tedious **crucial** work farmers must do from one side of the globe to the other. This system is user friendly and covers any type of environment. 
+The SFS communication capabilities extending across the globe with GPS real-time location data;smart device connectivity; **Cloud Commputing** utilizing WiFi via router or hotspot. Provides farmers with the peace of mind, by providing them access to crop status arround the clock from anywhere in the world. 
+In comparison to other farming systems on the market, this **smart farming system** is a **tesla** because it's *Cutting Edge Technology* boosts ROI and farmer morale!
 
 # Components/Details
 * Particle Argon
+* UltraSonic Component
+* Adafruit Ultimate GPS Breakout
 * Adafruit OLED display
 * Seeed Grove Dust Sensor
 * Adafruit BME 280
@@ -16,8 +17,7 @@ in order to boost yields and maintain farmer morale!
 * Stepper Motor
 * Solar Cell
 * Rechargeable Battery
-* UltraSonic Component
-* MPU 6050
+* DFRobot 6 DOF Sensor - MPU6050
 
 # Parts/ Tools
 * Acrylic
